@@ -37,6 +37,7 @@ class _LoginScreenState extends State<LoginScreen> {
   void _login() {
     if (_formKey.currentState!.validate()) {
       String name = _nameController.text;
+
       String email = _emailController.text;
 
       setState(() {
