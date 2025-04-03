@@ -1,114 +1,155 @@
 import 'package:flutter/material.dart';
+import 'database_helper.dart';
+import 'cadastrocliente.dart';
+import 'cadastroservico.dart';
 
 void main() {
-  runApp(const MyApp());
+  runApp(MyApp());
 }
 
 class MyApp extends StatelessWidget {
-  const MyApp({super.key});
-
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
-      title: 'Login',
-      theme: ThemeData(
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-        useMaterial3: true,
-      ),
-      home: const LoginScreen(),
+      home: HomeScreen(),
     );
   }
 }
 
-class LoginScreen extends StatefulWidget {
-  const LoginScreen({super.key});
-
+class HomeScreen extends StatelessWidget {
   @override
-  _LoginScreenState createState() => _LoginScreenState();
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text('Gestão de Clientes e Serviços')),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            ElevatedButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => CadastroClienteScreen()),
+                );
+              },
+              child: Text('Cadastrar Cliente'),
+            ),
+            SizedBox(height: 16),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => CadastroServicoScreen()),
+                );
+              },
+              child: Text('Cadastrar Serviço'),
+            ),
+            SizedBox(height: 16),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => ListaClientesScreen()),
+                );
+              },
+              child: Text('Listar Clientes'),
+            ),
+            SizedBox(height: 16),
+            ElevatedButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (context) => ListaServicosScreen()),
+                );
+              },
+              child: Text('Listar Serviços'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
 }
 
-class _LoginScreenState extends State<LoginScreen> {
-  final TextEditingController _nameController = TextEditingController();
-  final TextEditingController _emailController = TextEditingController();
-  final _formKey = GlobalKey<FormState>();
-  final List<Map<String, String>> _users = [];
+class ListaClientesScreen extends StatefulWidget {
+  @override
+  _ListaClientesScreenState createState() => _ListaClientesScreenState();
+}
 
-  void _login() {
-    if (_formKey.currentState!.validate()) {
-      String name = _nameController.text;
+class _ListaClientesScreenState extends State<ListaClientesScreen> {
+  List<Map<String, dynamic>> clientes = [];
 
-      String email = _emailController.text;
+  @override
+  void initState() {
+    super.initState();
+    _carregarClientes();
+  }
 
-      setState(() {
-        _users.add({'name': name, 'email': email});
-        _nameController.clear();
-        _emailController.clear();
-      });
-    }
+  Future<void> _carregarClientes() async {
+    final data = await DatabaseHelper.instance.getClientes();
+    setState(() {
+      clientes = data;
+    });
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Login')),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Form(
-              key: _formKey,
-              child: Column(
-                children: [
-                  TextFormField(
-                    controller: _nameController,
-                    decoration: InputDecoration(
-                      labelText: 'Nome',
-                      border: OutlineInputBorder(),
-                    ),
-                    validator:
-                        (value) => value!.isEmpty ? 'Digite seu nome' : null,
-                  ),
-                  const SizedBox(height: 10),
-                  TextFormField(
-                    controller: _emailController,
-                    decoration: InputDecoration(
-                      labelText: 'E-mail',
-                      border: OutlineInputBorder(),
-                    ),
-                    keyboardType: TextInputType.emailAddress,
-                    validator:
-                        (value) =>
-                            value!.contains('@')
-                                ? null
-                                : 'Digite um e-mail válido',
-                  ),
-                  const SizedBox(height: 20),
-                  ElevatedButton(
-                    onPressed: _login,
-                    child: const Text('Cadastrar'),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 20),
-            Expanded(
-              child: ListView.builder(
-                itemCount: _users.length,
-                itemBuilder: (context, index) {
-                  return Card(
-                    margin: const EdgeInsets.symmetric(vertical: 5),
-                    child: ListTile(
-                      title: Text(_users[index]['name']!),
-                      subtitle: Text(_users[index]['email']!),
-                    ),
-                  );
-                },
-              ),
-            ),
-          ],
-        ),
+      appBar: AppBar(title: Text('Lista de Clientes')),
+      body: ListView.builder(
+        itemCount: clientes.length,
+        itemBuilder: (context, index) {
+          final cliente = clientes[index];
+          return ListTile(
+            title: Text(cliente['nome']),
+            subtitle: Text('Telefone: ${cliente['telefone']}'),
+          );
+        },
+      ),
+    );
+  }
+}
+
+class ListaServicosScreen extends StatefulWidget {
+  @override
+  _ListaServicosScreenState createState() => _ListaServicosScreenState();
+}
+
+class _ListaServicosScreenState extends State<ListaServicosScreen> {
+  List<Map<String, dynamic>> servicos = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _carregarServicos();
+  }
+
+  Future<void> _carregarServicos() async {
+    final data = await DatabaseHelper.instance.getServicos();
+    setState(() {
+      servicos = data;
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(title: Text('Lista de Serviços')),
+      body: ListView.builder(
+        itemCount: servicos.length,
+        itemBuilder: (context, index) {
+          final servico = servicos[index];
+          return ListTile(
+            title: Text(servico['descricao']),
+            subtitle: Text(
+                'Data: ${servico['data']} - Horas: ${servico['horas']} - Valor: R\$${servico['valor_unitario']}'),
+          );
+        },
       ),
     );
   }
